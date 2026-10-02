@@ -6,7 +6,7 @@ Project Specification
 
  Build a document management and question-answering system that can efficiently ingest legal documents and provide accurate, source-backed answers to questions about them.
 
- The system will be a full-stack application called **Law-Law-Land**, focused on the **Constitution of India** and **Supreme Court of India judgments**.
+ The system will be a web application called **Law-Law-Land**, focused on the **Constitution of India** and **Supreme Court of India judgments**.
 
  ### Sample Queries
 
@@ -114,4 +114,4 @@ Project Specification
 3. **Traceability of answers to original sources.**
 4. **Safe, read-only database access for LLM-generated SQL.**
 5. **Strong evaluation using a golden dataset.**
-6. **A simple and maintainable full-stack architecture.**
+6. **A simple and maintainable web architecture.**
