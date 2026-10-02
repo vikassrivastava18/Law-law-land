@@ -35,8 +35,7 @@ Project Specification
 
  **Primary source:**
 
- [Constitution of India](<https://www.constitutionofindia.net/>)
-
+ NCERT book and document published by Legislative Department (GOI) 
  Other reliable sources may also be considered.
 
 ---
