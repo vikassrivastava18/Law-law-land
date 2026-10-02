@@ -81,29 +81,21 @@ Project Specification
 
  The system should meet defined evaluation criteria before being considered production-ready.
 
- ### 3.4 Frontend
+ ### 3.4 Application
 
- Build a simple **Single Page Application (SPA)** with:
+ Build a simple web application with:
 
- - User authentication.
+- User authentication.
 - Document/file upload.
 - Query interface.
 - Display of answers with source references.
 - Basic document/query history where appropriate.
-
- ### 3.5 Backend
-
- Build the backend using a **Python-based framework**.
-
- The backend should provide APIs for:
-
- - Authentication and user management.
+- Authentication and user management.
 - Document ingestion and processing.
 - Document/query retrieval.
 - Question answering.
 - Evaluation and monitoring where required.
 
----
 
  ## 4\. Core Requirements
 
