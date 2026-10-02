@@ -94,7 +94,7 @@ Project Specification
 
  ### 3.5 Backend
 
- Build the backend using a **Python-based framework**, with **Django preferred**.
+ Build the backend using a **Python-based framework**.
 
  The backend should provide APIs for:
 
