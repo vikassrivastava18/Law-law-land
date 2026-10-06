@@ -4,7 +4,7 @@ Project Specification
 
  ## 1\. Prototype Summary
 
- Build a query-answering system that can efficiently ingest legal documents and provide accurate, source-backed answers to questions about them.
+ Build a query-answering application that can efficiently ingest legal documents and provide accurate, source-backed answers to questions about them.
 
  The system will be a web application called **Law-Law-Land**, focused on the **Constitution of India** and **Supreme Court of India judgments**.
 
