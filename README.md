@@ -48,7 +48,7 @@ Project Specification
 
  The pipeline should:
 
- - Support web scraping and/or document/file processing using Python libraries.
+- Support web scraping and/or document/file processing using Python libraries.
 - Clean and normalize extracted data.
 - Detect and handle duplicate documents.
 - Preserve important document metadata.
@@ -61,7 +61,7 @@ Project Specification
 
  The agent should be capable of selecting the appropriate retrieval mechanism, such as:
 
- - **Vector search / RAG** for unstructured questions.
+- **Vector search / RAG** for unstructured questions.
 - **SQL** for structured queries and filtering.
 - **Other retrieval methods** where appropriate.
 
@@ -73,7 +73,7 @@ Project Specification
 
  The evaluation should measure factors such as:
 
- - Answer correctness.
+- Answer correctness.
 - Retrieval accuracy.
 - Source/reference accuracy.
 - Completeness.
@@ -101,7 +101,7 @@ Project Specification
 
  The prototype should prioritize:
 
- 1. **Accurate, source-backed answers.**
+1. **Accurate, source-backed answers.**
 2. **Reliable document ingestion and deduplication.**
 3. **Traceability of answers to original sources.**
 4. **Safe, read-only database access for LLM-generated SQL.**
