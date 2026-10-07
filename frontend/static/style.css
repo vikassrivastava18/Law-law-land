@@ -488,3 +488,15 @@ footer {
         text-align: center;
     }
 }
+
+ .nav-search input {
+            padding: 0.2rem 0.75rem;
+            border: 1px solid #d6d3d1;
+            border-radius: 4px;
+            font: inherit;
+        }
+
+        .nav-search input:focus {
+            outline: 2px solid #8b6f47;
+            outline-offset: 2px;
+        }
