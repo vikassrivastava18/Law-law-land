@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Law-Law-Land | Indian Constitution & Judiciary</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="./static/style.css">
+
+    <style>
+        /* You can move this to style.css under .hero */
+        .hero {
+            position: relative;
+            min-height: 80vh; /* adjust as needed */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("./static/images/Screenshot From 2026-10-06 22-59-07.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+
+        /* Dark overlay so text is readable */
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55); /* adjust darkness */
+            z-index: -1;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+        }
+
+        /* Optional: ensure text contrasts well */
+        .hero .eyebrow,
+        .hero h1,
+        .hero .hero-text,
+        .hero .button {
+            color: #fff;
+        }
+
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <header class="navbar">
+        <div class="container nav-inner">
+
+            <a href="#" class="logo">
+                Law-Law-Land
+            </a>
+
+            <nav>
+                <a href="#constitution">Constitution</a>
+                <a href="#rights">Fundamental Rights</a>
+                <a href="#judiciary">Judiciary</a>
+                <a href="#preamble">Preamble</a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <main>
+        <section class="hero">
+            <div class="container">
+
+                <div class="hero-content">
+                    <p class="eyebrow">THE CONSTITUTION OF INDIA</p>
+
+                    <h1>
+                        We, the<br>
+                        <span>People.</span>
+                    </h1>
+
+                    <p class="hero-text">
+                        The Constitution of India begins with three simple
+                        words that place democracy exactly where it belongs —
+                        <strong>with the people.</strong>
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="#constitution" class="button primary">
+                            Explore the Constitution
+                        </a>
+
+                        <a href="#preamble" class="button secondary">
+                            Read the Preamble
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-inner">
+
+            <div class="logo">
+                Law-Law-Land
+            </div>
+
+            <p>
+                Understanding Indian law, one provision at a time.
+            </p>
+
+            <span>
+                © 2026 Law-Law-Land
+            </span>
+
+        </div>
+    </footer>
+
+</body>
+</html>

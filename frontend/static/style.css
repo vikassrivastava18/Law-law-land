@@ -1,0 +1,490 @@
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+
+    color: #24231f;
+    font-family: "DM Sans", sans-serif;
+    line-height: 1.6;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.container {
+    width: min(1180px, 90%);
+    margin: 0 auto;
+}
+
+.narrow {
+    max-width: 850px;
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.navbar {
+    height: 82px;
+    border-bottom: 1px solid #ddd6c9;
+}
+
+.nav-inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-family: "Playfair Display", serif;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.nav-inner nav {
+    display: flex;
+    gap: 32px;
+}
+
+.nav-inner nav a {
+    font-size: 14px;
+    color: #59564f;
+    transition: color 0.2s ease;
+}
+
+.nav-inner nav a:hover {
+    color: #a55d28;
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero {
+    padding: 40px 0 110px;
+}
+
+.hero-image {
+    height: 470px;
+    width: 100%;
+    margin-bottom: 75px;
+}
+
+.image-placeholder {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ded7c9,
+            #eee9df
+        );
+
+    border: 1px solid #d1c9bb;
+
+    color: #817b70;
+}
+
+.image-placeholder span {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.image-placeholder small {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+
+.hero-content {
+    max-width: 900px;
+}
+
+.eyebrow,
+.section-label {
+    color: #a55d28;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.hero h1 {
+    margin-top: 18px;
+
+    font-family: "Playfair Display", serif;
+    font-size: clamp(70px, 10vw, 145px);
+    line-height: 0.88;
+    letter-spacing: -6px;
+    font-weight: 600;
+}
+
+.hero h1 span {
+    color: #a55d28;
+}
+
+.hero-text {
+    max-width: 680px;
+    margin-top: 35px;
+
+    font-size: 20px;
+    line-height: 1.7;
+    color: #5c5952;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 35px;
+}
+
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 14px 23px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+.button.primary {
+    background: #282722;
+    color: #fff;
+}
+
+.button.primary:hover {
+    background: #a55d28;
+}
+
+.button.secondary {
+    border: 1px solid #bbb4a8;
+    color: #38362f;
+}
+
+.button.secondary:hover {
+    border-color: #282722;
+}
+
+
+/* =========================================
+   INTRODUCTION
+========================================= */
+
+.intro {
+    padding: 130px 0;
+    background: #ebe5d9;
+}
+
+.intro h2,
+.section-heading h2 {
+    margin-top: 18px;
+
+    font-family: "Playfair Display", serif;
+    font-size: clamp(45px, 6vw, 75px);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    font-weight: 600;
+}
+
+.intro p:not(.section-label) {
+    max-width: 720px;
+    margin-top: 28px;
+
+    color: #625f57;
+    font-size: 18px;
+    line-height: 1.8;
+}
+
+
+/* =========================================
+   EXPLORE
+========================================= */
+
+.explore {
+    padding: 130px 0;
+}
+
+.section-heading {
+    max-width: 700px;
+    margin-bottom: 65px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    min-height: 360px;
+
+    padding: 32px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #fdfbf7;
+    border: 1px solid #ddd6c9;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-7px);
+
+    box-shadow:
+        0 20px 45px rgba(40, 39, 34, 0.08);
+}
+
+.card-number {
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+    color: #a55d28;
+}
+
+.card h3 {
+    margin-top: 70px;
+
+    font-family: "Playfair Display", serif;
+    font-size: 32px;
+}
+
+.card p {
+    margin-top: 15px;
+    color: #69655d;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.card-link {
+    margin-top: auto;
+    padding-top: 30px;
+
+    font-size: 13px;
+    font-weight: 700;
+    color: #a55d28;
+}
+
+
+/* =========================================
+   PREAMBLE
+========================================= */
+
+.preamble {
+    padding: 140px 0;
+
+    background: #282722;
+    color: #f7f3eb;
+}
+
+.preamble-container {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 100px;
+}
+
+.preamble h2 {
+    margin-top: 20px;
+
+    font-family: "Playfair Display", serif;
+    font-size: clamp(48px, 6vw, 78px);
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.preamble .section-label {
+    color: #d18a50;
+}
+
+.preamble-text > p {
+    color: #c9c4b9;
+    font-family: "Playfair Display", serif;
+    font-size: 21px;
+    line-height: 1.7;
+}
+
+.principles {
+    margin-top: 45px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+}
+
+.principles div {
+    padding-top: 20px;
+    border-top: 1px solid #57544d;
+}
+
+.principles strong {
+    display: block;
+
+    font-family: "Playfair Display", serif;
+    font-size: 27px;
+    font-weight: 500;
+}
+
+.principles span {
+    display: block;
+    margin-top: 7px;
+
+    color: #aaa59a;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   CLOSING
+========================================= */
+
+.closing {
+    padding: 150px 0;
+    text-align: center;
+}
+
+.closing-quote {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(48px, 7vw, 90px);
+    line-height: 1;
+    letter-spacing: -3px;
+}
+
+.closing-text {
+    max-width: 550px;
+    margin: 30px auto 35px;
+
+    color: #67635b;
+    font-size: 18px;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+footer {
+    border-top: 1px solid #ddd6c9;
+    padding: 35px 0;
+}
+
+.footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.footer-inner p,
+.footer-inner span {
+    color: #777269;
+    font-size: 12px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 800px) {
+
+    .navbar {
+        height: auto;
+        padding: 20px 0;
+    }
+
+    .nav-inner {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .nav-inner nav {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .hero {
+        padding-top: 25px;
+    }
+
+    .hero-image {
+        height: 300px;
+        margin-bottom: 50px;
+    }
+
+    .hero h1 {
+        font-size: 70px;
+        letter-spacing: -3px;
+    }
+
+    .hero-text {
+        font-size: 17px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button {
+        text-align: center;
+    }
+
+    .intro,
+    .explore,
+    .preamble,
+    .closing {
+        padding: 90px 0;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .preamble-container {
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+
+    .principles {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+}
