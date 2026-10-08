@@ -1,12 +1,12 @@
 Project Specification
 
-# Law-Law-Land
+# We-The-People
 
  ## 1\. Prototype Summary
 
  Build a query-answering application that can efficiently ingest legal documents and provide accurate, source-backed answers to questions about them.
 
- The system will be a web application called **Law-Law-Land**, focused on the **Constitution of India** and **Supreme Court of India judgments**.
+ The system will be a web application called **We-The-People**, focused on the **Constitution of India** and **Supreme Court of India judgments**.
 
  ### Sample Queries
 
