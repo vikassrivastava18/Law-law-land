@@ -3,8 +3,8 @@ import tarfile
 import requests
 from pathlib import Path
 
-YEAR = 2022
 
+YEAR = 2022
 BASE_URL = (
     "https://indian-supreme-court-judgments.s3.ap-south-1.amazonaws.com"
 )

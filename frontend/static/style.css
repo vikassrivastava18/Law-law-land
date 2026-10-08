@@ -77,6 +77,26 @@ a {
    HERO
 ========================================= */
 
+.hero-layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+}
+
+.hero-art {
+    min-width: 0;
+}
+
+.hero-actions {
+    flex-wrap: wrap;
+}
+
+.constitution-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
 .hero {
     padding: 10px 0 10px;
 }
@@ -419,6 +439,10 @@ footer {
 ========================================= */
 
 @media (max-width: 800px) {
+
+    .hero-layout {
+        grid-template-columns: 1fr;
+    }
 
     .navbar {
         height: auto;
