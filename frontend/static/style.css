@@ -78,11 +78,11 @@ a {
 ========================================= */
 
 .hero {
-    padding: 40px 0 110px;
+    padding: 10px 0 10px;
 }
 
 .hero-image {
-    height: 470px;
+    height: 400px;
     width: 100%;
     margin-bottom: 75px;
 }

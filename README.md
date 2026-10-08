@@ -10,7 +10,7 @@ Project Specification
 
  ### Sample Queries
 
- - Who were the key framers of the Constitution?
+- Who were the key framers of the Constitution?
 - Explain Article 19 as if I were five years old.
 - Show me all judgments from 2022 by Justice Chandrachud.
 - Summarize the latest judgment on the appointment of the Chief Election Commissioner (CEC).
