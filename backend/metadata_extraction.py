@@ -1,256 +1,651 @@
+import argparse
 import json
 import re
 from pathlib import Path
+
 from bs4 import BeautifulSoup
 
 
-INPUT_DIR = Path("/home/vikas/Documents/Law-law-land/data/metadata/2026")
-OUTPUT_FILE = Path("/home/vikas/Documents/Law-law-land/data/judgments_metadata_2026.json")
+# =============================================================
+# Configuration
+# =============================================================
 
+ERROR_FILE = Path(
+    "data/metadata_extraction_errors.json"
+)
+
+
+# =============================================================
+# Utility functions
+# =============================================================
 
 def clean_text(text):
-    """Normalize whitespace and HTML text."""
+    """
+    Normalize whitespace and remove unwanted characters.
+    """
+
     if not text:
         return None
 
+    text = str(text)
+
+    # Non-breaking space
     text = text.replace("\xa0", " ")
+
+    # Normalize whitespace
     text = re.sub(r"\s+", " ", text)
 
     return text.strip()
 
 
-def extract_metadata(file_path):
-    """Extract judgment metadata from one JSON file."""
+def normalize_date(date_string):
+    """
+    Convert DD-MM-YYYY to YYYY-MM-DD.
+    """
 
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    raw_html = data.get("raw_html", "")
-
-    if not raw_html:
+    if not date_string:
         return None
 
-    soup = BeautifulSoup(raw_html, "lxml")
+    match = re.search(
+        r"(\d{2})-(\d{2})-(\d{4})",
+        date_string
+    )
 
-    metadata = {
-        "judgment_id": None,
-        "year": data.get("citation_year", 2026),
-        "case_title": None,
+    if not match:
+        return None
+
+    day, month, year = match.groups()
+
+    return f"{year}-{month}-{day}"
+
+
+def extract_judges(coram_text):
+    """
+    Extract individual judge names from Coram text.
+
+    Example:
+
+        Coram : M.R. SHAH*, B.V. NAGARATHNA
+
+    becomes:
+
+        [
+            "M.R. SHAH",
+            "B.V. NAGARATHNA"
+        ]
+    """
+
+    if not coram_text:
+        return []
+
+    # Remove "Coram :"
+    coram_text = re.sub(
+        r"^\s*Coram\s*:\s*",
+        "",
+        coram_text,
+        flags=re.IGNORECASE
+    )
+
+    # Remove author marker (*)
+    coram_text = coram_text.replace("*", "")
+
+    judges = []
+
+    for judge in coram_text.split(","):
+
+        judge = clean_text(judge)
+
+        if judge:
+            judges.append(judge)
+
+    return judges
+
+
+# =============================================================
+# Case title
+# =============================================================
+
+def extract_case_title(soup):
+    """
+    Extract case title from the <strong> element containing
+    'versus'.
+    """
+
+    for tag in soup.find_all("strong"):
+
+        text = clean_text(
+            tag.get_text(" ", strip=True)
+        )
+
+        if not text:
+            continue
+
+        if re.search(
+            r"\bversus\b",
+            text,
+            re.IGNORECASE
+        ):
+            return text
+
+    return None
+
+
+# =============================================================
+# Coram / Judges
+# =============================================================
+
+def extract_coram_and_issue(soup):
+    """
+    Extract judges and issue/summary from the section:
+
+        <strong>
+            Coram : ...
+        </strong>
+        <br>
+
+        Issue / summary
+
+        <br>
+
+        <strong class="caseDetailsTD">
+            Decision Date : ...
+        </strong>
+
+    Works with both:
+
+        Issue for Consideration ...
+
+    and:
+
+        Appeal: Murder case ...
+    """
+
+    judges = []
+    issue = None
+
+    # ---------------------------------------------------------
+    # Find Coram tag
+    # ---------------------------------------------------------
+
+    coram_tag = None
+
+    for tag in soup.find_all("strong"):
+
+        text = clean_text(
+            tag.get_text(" ", strip=True)
+        )
+
+        if not text:
+            continue
+
+        if re.search(
+            r"\bCoram\s*:",
+            text,
+            re.IGNORECASE
+        ):
+            coram_tag = tag
+            break
+
+    if not coram_tag:
+        return judges, issue
+
+    # ---------------------------------------------------------
+    # Extract judges
+    # ---------------------------------------------------------
+
+    coram_text = clean_text(
+        coram_tag.get_text(
+            " ",
+            strip=True
+        )
+    )
+
+    judges = extract_judges(coram_text)
+
+    # ---------------------------------------------------------
+    # Extract issue / summary
+    # ---------------------------------------------------------
+
+    issue_parts = []
+
+    # The next sibling should normally be <br>
+    current = coram_tag.next_sibling
+
+    # Move past the <br> following Coram
+    if (
+        current is not None
+        and getattr(current, "name", None) == "br"
+    ):
+        current = current.next_sibling
+
+    while current is not None:
+
+        tag_name = getattr(
+            current,
+            "name",
+            None
+        )
+
+        # -----------------------------------------------------
+        # Stop at the next <br>
+        #
+        # This is the normal end of the issue/summary.
+        # -----------------------------------------------------
+
+        if tag_name == "br":
+            break
+
+        # -----------------------------------------------------
+        # Defensive stop:
+        # case details section
+        # -----------------------------------------------------
+
+        if (
+            tag_name == "strong"
+            and "caseDetailsTD" in (
+                current.get("class") or []
+            )
+        ):
+            break
+
+        # -----------------------------------------------------
+        # Extract text
+        # -----------------------------------------------------
+
+        if hasattr(current, "get_text"):
+
+            text = current.get_text(
+                " ",
+                strip=True
+            )
+
+        else:
+
+            text = str(current)
+
+        text = clean_text(text)
+
+        if text:
+            issue_parts.append(text)
+
+        current = current.next_sibling
+
+    issue = clean_text(
+        " ".join(issue_parts)
+    )
+
+    if issue:
+
+        # Remove heading if present
+        issue = re.sub(
+            r"^\s*Issue\s+for\s+Consideration\s*",
+            "",
+            issue,
+            flags=re.IGNORECASE
+        )
+
+        issue = clean_text(issue)
+
+    return judges, issue
+
+
+# =============================================================
+# Case details
+# =============================================================
+
+def extract_case_details(soup):
+    """
+    Extract:
+
+        Decision Date
+        Case Number
+        Disposal Nature
+        Bench Strength
+    """
+
+    result = {
         "decision_date": None,
         "case_number": None,
-        "citation": None,
-        "neutral_citation": data.get("nc_display"),
-        "cnr": None,
-        "judges": [],
-        "bench_strength": None,
         "disposal_nature": None,
-        "languages": [],
-        "issue": None,
-        "source_path": data.get("path"),
-        "scraped_at": data.get("scraped_at"),
+        "bench_strength": None,
     }
 
     # ---------------------------------------------------------
-    # Case title
+    # Find caseDetailsTD
     # ---------------------------------------------------------
 
-    # Example:
-    # <button ...>
-    #   <strong>
-    #       GOPAL KRISHAN & ORS.
-    #       versus
-    #       DAULAT RAM & ORS.
-    #   </strong>
-    # </button>
-
-    strong_tags = soup.find_all("strong")
-
-    for tag in strong_tags:
-        text = clean_text(tag.get_text(" ", strip=True))
-
-        if text and " versus " in text.lower():
-            metadata["case_title"] = text
-            break
-
-    # ---------------------------------------------------------
-    # Citation
-    # ---------------------------------------------------------
-
-    # Example:
-    # [2025] 1 S.C.R. 93
-
-    escr_text = soup.select_one(".escrText")
-
-    if escr_text:
-        metadata["citation"] = clean_text(escr_text.get_text())
-
-    # ---------------------------------------------------------
-    # Neutral citation
-    # ---------------------------------------------------------
-
-    nc_display = soup.select_one(".ncDisplay")
-
-    if nc_display:
-        metadata["neutral_citation"] = clean_text(
-            nc_display.get_text()
-        )
-
-    # ---------------------------------------------------------
-    # CNR
-    # ---------------------------------------------------------
-
-    cnr = soup.find("input", {"id": "cnr"})
-
-    if cnr:
-        metadata["cnr"] = cnr.get("value")
-
-    # ---------------------------------------------------------
-    # Coram / Judges
-    # ---------------------------------------------------------
-
-    # Example:
-    # <strong>
-    #   Coram : C.T. RAVIKUMAR, SANJAY KAROL
-    # </strong>
-
-    page_text = soup.get_text(" ", strip=True)
-
-    coram_match = re.search(
-        r"Coram\s*:\s*(.*?)(?=\s+Issue for Consideration|\s+Decision Date)",
-        page_text,
-        re.IGNORECASE,
+    case_details = soup.select_one(
+        "strong.caseDetailsTD"
     )
 
-    if coram_match:
-        coram_text = clean_text(coram_match.group(1))
+    if not case_details:
+        return result
 
-        # Split judges by comma
-        judges = [
-            clean_text(j)
-            for j in coram_text.split(",")
-            if clean_text(j)
-        ]
-
-        metadata["judges"] = judges
-
-    # ---------------------------------------------------------
-    # Bench strength
-    # ---------------------------------------------------------
-
-    bench_match = re.search(
-        r"Bench\s*:\s*(\d+)\s*Judges?",
-        page_text,
-        re.IGNORECASE,
+    text = clean_text(
+        case_details.get_text(
+            " ",
+            strip=True
+        )
     )
 
-    if bench_match:
-        metadata["bench_strength"] = int(
-            bench_match.group(1)
-        )
+    if not text:
+        return result
 
     # ---------------------------------------------------------
-    # Decision date
+    # Decision Date
     # ---------------------------------------------------------
 
     date_match = re.search(
-        r"Decision\s*Date\s*:\s*(\d{2}-\d{2}-\d{4})",
-        page_text,
-        re.IGNORECASE,
+        r"Decision\s*Date\s*:\s*"
+        r"(\d{2}-\d{2}-\d{4})",
+        text,
+        re.IGNORECASE
     )
 
     if date_match:
-        raw_date = date_match.group(1)
 
-        # Convert DD-MM-YYYY -> YYYY-MM-DD
-        day, month, year = raw_date.split("-")
-
-        metadata["decision_date"] = (
-            f"{year}-{month}-{day}"
+        result["decision_date"] = normalize_date(
+            date_match.group(1)
         )
 
     # ---------------------------------------------------------
-    # Case number
+    # Case Number
+    #
+    # Everything between:
+    #
+    # Case No :
+    #
+    # and:
+    #
+    # Disposal Nature :
     # ---------------------------------------------------------
 
     case_match = re.search(
-        r"Case\s*No\s*:\s*(.*?)(?=\s*\|\s*Disposal Nature)",
-        page_text,
-        re.IGNORECASE,
+        r"Case\s*No\s*:\s*"
+        r"(.*?)"
+        r"\s*\|\s*"
+        r"Disposal\s+Nature\s*:",
+        text,
+        re.IGNORECASE
     )
 
     if case_match:
-        metadata["case_number"] = clean_text(
+
+        result["case_number"] = clean_text(
             case_match.group(1)
         )
 
     # ---------------------------------------------------------
-    # Disposal nature
+    # Disposal Nature
+    #
+    # Everything between:
+    #
+    # Disposal Nature :
+    #
+    # and:
+    #
+    # Bench :
     # ---------------------------------------------------------
 
     disposal_match = re.search(
-        r"Disposal\s*Nature\s*:\s*(.*?)(?=\s*\|\s*Bench)",
-        page_text,
-        re.IGNORECASE,
+        r"Disposal\s+Nature\s*:\s*"
+        r"(.*?)"
+        r"\s*\|\s*"
+        r"Bench\s*:",
+        text,
+        re.IGNORECASE
     )
 
     if disposal_match:
-        metadata["disposal_nature"] = clean_text(
+
+        result["disposal_nature"] = clean_text(
             disposal_match.group(1)
         )
 
     # ---------------------------------------------------------
-    # Issue for Consideration
+    # Bench
     # ---------------------------------------------------------
 
-    issue_match = re.search(
-        r"Issue\s+for\s+Consideration\s*(.*?)(?=\s+Decision\s+Date\s*:)",
-        page_text,
-        re.IGNORECASE,
+    bench_match = re.search(
+        r"Bench\s*:\s*"
+        r"(\d+)\s*Judges?",
+        text,
+        re.IGNORECASE
     )
 
-    if issue_match:
-        metadata["issue"] = clean_text(
-            issue_match.group(1)
+    if bench_match:
+
+        result["bench_strength"] = int(
+            bench_match.group(1)
         )
 
-    # ---------------------------------------------------------
-    # Languages
-    # ---------------------------------------------------------
+    return result
+
+
+# =============================================================
+# Languages
+# =============================================================
+
+def extract_languages(soup):
+    """
+    Extract languages from the language <select>.
+    """
+
+    languages = []
 
     language_select = soup.find(
         "select",
-        {"id": re.compile(r"language", re.IGNORECASE)}
+        {
+            "id": re.compile(
+                r"language",
+                re.IGNORECASE
+            )
+        }
     )
 
-    if language_select:
+    if not language_select:
+        return ["English"]
 
-        for option in language_select.find_all("option"):
+    for option in language_select.find_all(
+        "option"
+    ):
 
-            language = clean_text(
-                option.get_text(" ", strip=True)
+        language = clean_text(
+            option.get_text(
+                " ",
+                strip=True
+            )
+        )
+
+        if language:
+            languages.append(language)
+
+    if not languages:
+        languages.append("English")
+
+    return languages
+
+
+# =============================================================
+# Main metadata extraction
+# =============================================================
+
+def extract_metadata(file_path):
+    """
+    Extract all metadata from one JSON file.
+    """
+
+    with open(
+        file_path,
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        data = json.load(f)
+
+    raw_html = data.get(
+        "raw_html",
+        ""
+    )
+
+    if not raw_html:
+        return None
+
+    soup = BeautifulSoup(
+        raw_html,
+        "lxml"
+    )
+
+    # ---------------------------------------------------------
+    # Basic metadata from JSON
+    # ---------------------------------------------------------
+
+    metadata = {
+
+        "judgment_id": None,
+
+        "year": data.get(
+            "citation_year",
+            2023
+        ),
+
+        "case_title": None,
+
+        "decision_date": None,
+
+        "case_number": None,
+
+        "citation": None,
+
+        "neutral_citation": data.get(
+            "nc_display"
+        ),
+
+        "cnr": None,
+
+        "judges": [],
+
+        "bench_strength": None,
+
+        "disposal_nature": None,
+
+        "languages": [],
+
+        "issue": None,
+
+        "source_path": data.get(
+            "path"
+        ),
+
+        "scraped_at": data.get(
+            "scraped_at"
+        ),
+    }
+
+    # =========================================================
+    # Case title
+    # =========================================================
+
+    metadata["case_title"] = (
+        extract_case_title(soup)
+    )
+
+    # =========================================================
+    # Citation
+    # =========================================================
+
+    escr_text = soup.select_one(
+        ".escrText"
+    )
+
+    if escr_text:
+
+        metadata["citation"] = clean_text(
+            escr_text.get_text()
+        )
+
+    # =========================================================
+    # Neutral citation
+    #
+    # IMPORTANT:
+    #
+    # We prefer the JSON's nc_display because it is already
+    # provided separately from raw_html.
+    # =========================================================
+
+    if not metadata["neutral_citation"]:
+
+        nc_display = soup.select_one(
+            ".ncDisplay"
+        )
+
+        if nc_display:
+
+            metadata["neutral_citation"] = (
+                clean_text(
+                    nc_display.get_text()
+                )
             )
 
-            if not language:
-                continue
+    # =========================================================
+    # CNR
+    # =========================================================
 
-            # Remove empty/default options
-            metadata["languages"].append(language)
+    cnr = soup.find(
+        "input",
+        {
+            "id": "cnr"
+        }
+    )
 
-    # If no language selector was found, assume English
-    if not metadata["languages"]:
-        metadata["languages"] = ["English"]
+    if cnr:
 
-    # ---------------------------------------------------------
+        metadata["cnr"] = cnr.get(
+            "value"
+        )
+
+    # =========================================================
+    # Coram + Issue
+    # =========================================================
+
+    (
+        metadata["judges"],
+        metadata["issue"]
+    ) = extract_coram_and_issue(
+        soup
+    )
+
+    # =========================================================
+    # Case details
+    # =========================================================
+
+    case_details = extract_case_details(
+        soup
+    )
+
+    metadata.update(
+        case_details
+    )
+
+    # =========================================================
+    # Languages
+    # =========================================================
+
+    metadata["languages"] = (
+        extract_languages(soup)
+    )
+
+    # =========================================================
     # Judgment ID
-    # ---------------------------------------------------------
-
-    # Prefer neutral citation.
     #
     # Example:
+    #
     # 2025 INSC 18
     #
     # becomes:
+    #
     # 2025INSC18
+    # =========================================================
 
     if metadata["neutral_citation"]:
 
@@ -260,65 +655,103 @@ def extract_metadata(file_path):
             metadata["neutral_citation"]
         )
 
-        metadata["judgment_id"] = judgment_id
+        metadata["judgment_id"] = (
+            judgment_id
+        )
 
-    # Fallback to filename/path if necessary
+    # ---------------------------------------------------------
+    # Fallback
+    # ---------------------------------------------------------
+
     if not metadata["judgment_id"]:
 
-        metadata["judgment_id"] = file_path.stem
+        metadata["judgment_id"] = (
+            file_path.stem
+        )
 
     return metadata
 
 
-def main():
+# =============================================================
+# Main
+# =============================================================
+
+def main(year: int):
+
+    input_dir = Path("data/metadata") / str(year)
+    output_file = Path(f"data/judgments_metadata_{year}.json")
+
+    # ---------------------------------------------------------
+    # Find all JSON files
+    # ---------------------------------------------------------
 
     json_files = list(
-        INPUT_DIR.rglob("*.json")
+        input_dir.rglob("*.json")
     )
 
-    print(f"Found {len(json_files)} JSON files.")
+    print(
+        f"Found {len(json_files)} JSON files."
+    )
 
     results = []
-
     failed = []
 
-    for index, file_path in enumerate(json_files, start=1):
+    # ---------------------------------------------------------
+    # Process files
+    # ---------------------------------------------------------
+
+    for index, file_path in enumerate(
+        json_files,
+        start=1
+    ):
 
         try:
 
-            metadata = extract_metadata(file_path)
+            metadata = extract_metadata(
+                file_path
+            )
 
             if metadata:
-                results.append(metadata)
+
+                results.append(
+                    metadata
+                )
 
             if index % 100 == 0:
+
                 print(
-                    f"Processed {index}/{len(json_files)}"
+                    f"Processed "
+                    f"{index}/{len(json_files)}"
                 )
 
         except Exception as e:
 
-            failed.append({
-                "file": str(file_path),
-                "error": str(e),
-            })
+            failed.append(
+                {
+                    "file": str(file_path),
+                    "error": str(e),
+                }
+            )
 
             print(
-                f"ERROR: {file_path}\n"
+                f"\nERROR: {file_path}"
+            )
+
+            print(
                 f"       {e}"
             )
 
-    # ---------------------------------------------------------
-    # Save output
-    # ---------------------------------------------------------
+    # =========================================================
+    # Save metadata
+    # =========================================================
 
-    OUTPUT_FILE.parent.mkdir(
+    output_file.parent.mkdir(
         parents=True,
         exist_ok=True
     )
 
     with open(
-        OUTPUT_FILE,
+        output_file,
         "w",
         encoding="utf-8"
     ) as f:
@@ -330,34 +763,61 @@ def main():
             indent=2
         )
 
-    # ---------------------------------------------------------
+    # =========================================================
     # Statistics
-    # ---------------------------------------------------------
+    # =========================================================
 
     print("\n" + "=" * 60)
-    print("Extraction complete")
+
+    print(
+        "Extraction complete"
+    )
+
     print("=" * 60)
 
-    print(f"JSON files found : {len(json_files)}")
-    print(f"Successfully parsed : {len(results)}")
-    print(f"Failed : {len(failed)}")
+    print(
+        f"JSON files found     : "
+        f"{len(json_files)}"
+    )
 
-    # ---------------------------------------------------------
-    # Missing-field report
-    # ---------------------------------------------------------
+    print(
+        f"Successfully parsed  : "
+        f"{len(results)}"
+    )
+
+    print(
+        f"Failed               : "
+        f"{len(failed)}"
+    )
+
+    # =========================================================
+    # Missing field report
+    # =========================================================
 
     fields = [
+
         "judgment_id",
+
         "case_title",
+
         "decision_date",
+
         "case_number",
+
         "citation",
+
         "neutral_citation",
+
         "cnr",
+
         "judges",
+
         "bench_strength",
+
         "disposal_nature",
+
         "languages",
+
         "issue",
     ]
 
@@ -372,23 +832,18 @@ def main():
         )
 
         print(
-            f"  {field:<20} {missing}"
+            f"  {field:<20} "
+            f"{missing}"
         )
 
-    print(f"\nOutput: {OUTPUT_FILE}")
-
-    # ---------------------------------------------------------
-    # Failed files
-    # ---------------------------------------------------------
+    # =========================================================
+    # Save failed files
+    # =========================================================
 
     if failed:
 
-        failed_file = Path(
-            "data/metadata_extraction_errors.json"
-        )
-
         with open(
-            failed_file,
+            ERROR_FILE,
             "w",
             encoding="utf-8"
         ) as f:
@@ -401,9 +856,29 @@ def main():
             )
 
         print(
-            f"\nFailed files written to: {failed_file}"
+            f"\nFailed files written to:"
+            f"\n{ERROR_FILE}"
         )
 
+    print(
+        f"\nOutput:"
+        f"\n{output_file}"
+    )
+
+
+# =============================================================
+# Entry point
+# =============================================================
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Extract judgment metadata for a specified year."
+    )
+    parser.add_argument(
+        "--year",
+        type=int,
+        required=True,
+        help="Year of metadata to process (for example, 2023).",
+    )
+    args = parser.parse_args()
+    main(args.year)
