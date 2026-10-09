@@ -27,7 +27,7 @@ Project Specification
 
  **Primary source:**
 
- [Indian Supreme Court Judgments — Dataset](<https://github.com/vanga/indian-supreme-court-judgments/blob/main/opendata/docs/dataset.md>)
+ [Indian Supreme Court Judgments — Dataset](<https://github.com/vanga/indian-supreme-court-judgments/blob/main/opendata/docs/dataset.md](https://github.com/vanga/indian-supreme-court-judgments/blob/main/README.md>)
 
  Other reliable sources may also be considered.
 
